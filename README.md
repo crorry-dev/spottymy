@@ -69,6 +69,26 @@ npm run dev
 
 The frontend will run on `http://localhost:3000`
 
+### Quick Start (Alternative)
+
+For convenience, you can use the provided startup scripts to run both backend and frontend simultaneously:
+
+**Linux/Mac:**
+```bash
+./start.sh
+```
+
+**Windows:**
+```batch
+start.bat
+```
+
+These scripts will automatically:
+- Check for required configuration files
+- Set up virtual environments
+- Install dependencies
+- Start both servers
+
 ## 📖 Usage
 
 ### Hosting a Party
