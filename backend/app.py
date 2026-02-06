@@ -16,6 +16,8 @@ CORS(app, supports_credentials=True)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Store party sessions in memory (use Redis in production)
+# WARNING: This in-memory storage is not thread-safe and should only be used for development.
+# In production, use Redis or another thread-safe storage backend.
 party_sessions = {}
 
 # Spotify OAuth configuration
@@ -132,7 +134,7 @@ def add_to_queue(party_code):
         'image_url': data.get('image_url'),
         'added_by': data.get('added_by', 'Anonymous'),
         'votes': 0,
-        'voters': [],
+        'voters': {},  # Changed to dict to track vote types
         'added_at': datetime.now().isoformat()
     }
     
@@ -162,18 +164,26 @@ def vote_song(party_code, song_index):
     
     song = party['queue'][song_index]
     
+    # Initialize voters as dict if it's a list (for backward compatibility)
+    if isinstance(song.get('voters', []), list):
+        song['voters'] = {}
+    
     # Remove previous vote if exists
     if voter in song['voters']:
-        song['voters'].remove(voter)
-        song['votes'] -= 1 if vote_type == 'down' else -1
+        previous_vote = song['voters'][voter]
+        if previous_vote == 'up':
+            song['votes'] -= 1
+        elif previous_vote == 'down':
+            song['votes'] += 1
+        del song['voters'][voter]
     
     # Add new vote
     if vote_type == 'up':
         song['votes'] += 1
-        song['voters'].append(voter)
+        song['voters'][voter] = 'up'
     elif vote_type == 'down':
         song['votes'] -= 1
-        song['voters'].append(voter)
+        song['voters'][voter] = 'down'
     
     # Sort queue by votes
     party['queue'].sort(key=lambda x: x['votes'], reverse=True)

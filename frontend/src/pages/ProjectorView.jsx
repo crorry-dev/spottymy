@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import axios from 'axios'
@@ -7,12 +7,11 @@ import { QRCodeSVG } from 'qrcode.react'
 import { FaUsers, FaMusic } from 'react-icons/fa'
 import './ProjectorView.css'
 
-let socket
-
 function ProjectorView() {
   const { partyCode } = useParams()
   const [party, setParty] = useState(null)
   const [time, setTime] = useState(new Date())
+  const socketRef = useRef(null)
 
   useEffect(() => {
     loadPartyData()
@@ -23,8 +22,9 @@ function ProjectorView() {
     }, 1000)
 
     return () => {
-      if (socket) {
-        socket.disconnect()
+      if (socketRef.current) {
+        socketRef.current.disconnect()
+        socketRef.current = null
       }
       clearInterval(timer)
     }
@@ -40,18 +40,18 @@ function ProjectorView() {
   }
 
   const setupSocket = () => {
-    socket = io()
-    socket.emit('join', { party_code: partyCode })
+    socketRef.current = io()
+    socketRef.current.emit('join', { party_code: partyCode })
 
-    socket.on('queue_updated', (queue) => {
+    socketRef.current.on('queue_updated', (queue) => {
       setParty(prev => ({ ...prev, queue }))
     })
 
-    socket.on('playback_updated', (currentSong) => {
+    socketRef.current.on('playback_updated', (currentSong) => {
       setParty(prev => ({ ...prev, current_song: currentSong }))
     })
 
-    socket.on('party_updated', (updatedParty) => {
+    socketRef.current.on('party_updated', (updatedParty) => {
       setParty(updatedParty)
     })
   }

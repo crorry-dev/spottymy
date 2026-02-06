@@ -19,7 +19,8 @@ if not exist venv (
     python -m venv venv
 )
 call venv\Scripts\activate.bat
-pip install -r requirements.txt >nul 2>&1
+echo Installing Python dependencies...
+pip install -r requirements.txt >nul
 start /B python app.py
 cd ..
 

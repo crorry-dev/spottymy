@@ -23,6 +23,8 @@ function CreateParty() {
       const response = await axios.post('/api/party/create', {
         host_name: hostName
       })
+      // Store host name for use in other views
+      localStorage.setItem('userName', hostName)
       setPartyData(response.data)
       setPartyCreated(true)
     } catch (error) {

@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import axios from 'axios'
 import io from 'socket.io-client'
 import { FaSearch, FaChevronUp, FaChevronDown, FaMusic } from 'react-icons/fa'
 import './MobileView.css'
-
-let socket
 
 function MobileView() {
   const { partyCode } = useParams()
@@ -16,14 +14,16 @@ function MobileView() {
   const [searching, setSearching] = useState(false)
   const [activeTab, setActiveTab] = useState('queue') // 'queue' or 'search'
   const userName = localStorage.getItem('userName') || 'Anonymous'
+  const socketRef = useRef(null)
 
   useEffect(() => {
     loadPartyData()
     setupSocket()
 
     return () => {
-      if (socket) {
-        socket.disconnect()
+      if (socketRef.current) {
+        socketRef.current.disconnect()
+        socketRef.current = null
       }
     }
   }, [partyCode])
@@ -38,18 +38,18 @@ function MobileView() {
   }
 
   const setupSocket = () => {
-    socket = io()
-    socket.emit('join', { party_code: partyCode })
+    socketRef.current = io()
+    socketRef.current.emit('join', { party_code: partyCode })
 
-    socket.on('queue_updated', (queue) => {
+    socketRef.current.on('queue_updated', (queue) => {
       setParty(prev => ({ ...prev, queue }))
     })
 
-    socket.on('playback_updated', (currentSong) => {
+    socketRef.current.on('playback_updated', (currentSong) => {
       setParty(prev => ({ ...prev, current_song: currentSong }))
     })
 
-    socket.on('party_updated', (updatedParty) => {
+    socketRef.current.on('party_updated', (updatedParty) => {
       setParty(updatedParty)
     })
   }

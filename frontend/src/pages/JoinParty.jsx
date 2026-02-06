@@ -24,6 +24,8 @@ function JoinParty() {
       })
       
       if (response.data.success) {
+        // Store user name for use in other views
+        localStorage.setItem('userName', userName)
         navigate(`/party/${partyCode}/mobile`)
       }
     } catch (error) {
