@@ -1,0 +1,7 @@
+Flask==3.0.0
+Flask-CORS==4.0.0
+Flask-SocketIO==5.3.5
+spotipy==2.25.1
+qrcode[pil]==7.4.2
+python-dotenv==1.0.0
+eventlet==0.35.1
